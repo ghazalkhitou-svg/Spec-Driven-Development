@@ -26,7 +26,7 @@ Objectiu: Ampliar el MVP sense perdre les funcionalitats de l'Increment 1.
 
 - [x] Tasca 2.2: Ampliar `add` amb `--due`, validació estricta i persistència. Afegir els tests d'alta vàlida i invàlida i compatibilitat. (RF-05, RF-06, RF-13; GS-04, GS-05, GS-14; dependència: 2.1)
 
-- [ ] Tasca 2.3: Implementar `edit --id` i l'edició parcial o múltiple dels atributs, amb validació abans de desar. Afegir tests d'edició vàlida i invàlida i d'ID inexistent per a `edit`. (RF-06, RF-07, RF-09, RF-10, RF-13; GS-06, GS-07, GS-09, GS-12, GS-13; dependència: 2.2)
+- [x] Tasca 2.3: Implementar `edit --id` i l'edició parcial o múltiple dels atributs, amb validació abans de desar. Afegir tests d'edició vàlida i invàlida i d'ID inexistent per a `edit`. (RF-06, RF-07, RF-09, RF-10, RF-13; GS-06, GS-07, GS-09, GS-12, GS-13; dependència: 2.2)
 
 - [ ] Tasca 2.4: Implementar `complete --id`, incloent-hi la compleció repetida i l'error d'ID inexistent. Afegir els tests corresponents. (RF-08, RF-09, RF-13; GS-08, GS-09; dependència: 2.3)
 

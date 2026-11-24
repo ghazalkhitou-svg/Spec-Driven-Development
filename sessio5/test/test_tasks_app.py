@@ -197,3 +197,165 @@ def test_gs14_compatibilitat_amb_registre_v1(projecte_temporal: Path) -> None:
         "[1] Pràctica 1 (RS) - estat: pendent",
         "[2] Pràctica 2 (SO) - estat: pendent",
     ]
+
+
+def test_gs06_edicio_parcial(projecte_temporal: Path) -> None:
+    fitxer = projecte_temporal / "data" / "tasks.json"
+    fitxer.parent.mkdir(parents=True, exist_ok=True)
+    original = {
+        "id": 1,
+        "title": "Pràctica 1",
+        "subject": "RS",
+        "status": "pendent",
+        "due": "2026-12-02",
+    }
+    fitxer.write_text(json.dumps([original], ensure_ascii=False), encoding="utf-8")
+
+    resultat = executar(
+        projecte_temporal,
+        "edit",
+        "--id",
+        "1",
+        "--title",
+        "Pràctica revisada",
+    )
+
+    assert resultat.stdout.strip() == "Tasca [ID: 1] modificada amb èxit"
+    assert json.loads(fitxer.read_text(encoding="utf-8")) == [
+        {**original, "title": "Pràctica revisada"}
+    ]
+
+
+def test_gs07_edicio_de_diversos_atributs(projecte_temporal: Path) -> None:
+    fitxer = projecte_temporal / "data" / "tasks.json"
+    fitxer.parent.mkdir(parents=True, exist_ok=True)
+    fitxer.write_text(
+        json.dumps(
+            [
+                {
+                    "id": 1,
+                    "title": "Pràctica 1",
+                    "subject": "RS",
+                    "status": "pendent",
+                }
+            ],
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    resultat = executar(
+        projecte_temporal,
+        "edit",
+        "--id",
+        "1",
+        "--title",
+        "Examen final",
+        "--subject",
+        "SO",
+        "--due",
+        "2026-12-15",
+        "--status",
+        "completada",
+    )
+
+    esperat = {
+        "id": 1,
+        "title": "Examen final",
+        "subject": "SO",
+        "status": "completada",
+        "due": "2026-12-15",
+    }
+    assert resultat.stdout.strip() == "Tasca [ID: 1] modificada amb èxit"
+    assert json.loads(fitxer.read_text(encoding="utf-8")) == [esperat]
+
+    llistat = executar(projecte_temporal, "list")
+    assert llistat.stdout.splitlines() == ["[1] Examen final (SO) - estat: completada"]
+
+
+def test_gs09_id_inexistent_en_edit(projecte_temporal: Path) -> None:
+    fitxer = projecte_temporal / "data" / "tasks.json"
+    fitxer.parent.mkdir(parents=True, exist_ok=True)
+    original = {
+        "id": 1,
+        "title": "Pràctica 1",
+        "subject": "RS",
+        "status": "pendent",
+    }
+    contingut_original = json.dumps([original], ensure_ascii=False)
+    fitxer.write_text(contingut_original, encoding="utf-8")
+
+    resultat = executar(
+        projecte_temporal,
+        "edit",
+        "--id",
+        "99",
+        "--title",
+        "Prova",
+        check=False,
+    )
+
+    assert resultat.returncode != 0
+    assert "ID 99" in resultat.stderr
+    assert fitxer.read_text(encoding="utf-8") == contingut_original
+
+
+def test_gs12_edicio_amb_data_incorrecta(projecte_temporal: Path) -> None:
+    fitxer = projecte_temporal / "data" / "tasks.json"
+    fitxer.parent.mkdir(parents=True, exist_ok=True)
+    original = {
+        "id": 1,
+        "title": "Original",
+        "subject": "RS",
+        "status": "pendent",
+        "due": "2026-12-02",
+    }
+    contingut_original = json.dumps([original], ensure_ascii=False)
+    fitxer.write_text(contingut_original, encoding="utf-8")
+
+    resultat = executar(
+        projecte_temporal,
+        "edit",
+        "--id",
+        "1",
+        "--title",
+        "Nou",
+        "--due",
+        "2026-02-30",
+        check=False,
+    )
+
+    assert resultat.returncode != 0
+    assert "data límit" in resultat.stderr
+    assert fitxer.read_text(encoding="utf-8") == contingut_original
+    assert json.loads(fitxer.read_text(encoding="utf-8")) == [original]
+
+
+@pytest.mark.parametrize(
+    ("arguments", "missatge"),
+    [
+        (("edit", "--id", "1"), "almenys un atribut"),
+        (("edit", "--id", "1", "--status", "desconegut"), "estat"),
+    ],
+)
+def test_gs13_edicio_sense_atributs_o_estat_invalid(
+    projecte_temporal: Path,
+    arguments: tuple[str, ...],
+    missatge: str,
+) -> None:
+    fitxer = projecte_temporal / "data" / "tasks.json"
+    fitxer.parent.mkdir(parents=True, exist_ok=True)
+    original = {
+        "id": 1,
+        "title": "Pràctica 1",
+        "subject": "RS",
+        "status": "pendent",
+    }
+    contingut_original = json.dumps([original], ensure_ascii=False)
+    fitxer.write_text(contingut_original, encoding="utf-8")
+
+    resultat = executar(projecte_temporal, *arguments, check=False)
+
+    assert resultat.returncode != 0
+    assert missatge in resultat.stderr
+    assert fitxer.read_text(encoding="utf-8") == contingut_original

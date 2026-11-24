@@ -3,13 +3,20 @@ import sys
 from pathlib import Path
 
 try:
-    from models import Task, tasks_from_json, tasks_to_json, validar_data_limit
+    from models import (
+        Task,
+        tasks_from_json,
+        tasks_to_json,
+        validar_data_limit,
+        validar_estat,
+    )
 except ModuleNotFoundError:
     from src.models import (
         Task,
         tasks_from_json,
         tasks_to_json,
         validar_data_limit,
+        validar_estat,
     )
 
 
@@ -55,6 +62,40 @@ def afegir_tasca(
     return tasca
 
 
+def editar_tasca(
+    id_tasca: int,
+    titol: str | None = None,
+    assignatura: str | None = None,
+    data_limit: str | None = None,
+    estat: str | None = None,
+    ruta: Path | None = None,
+) -> Task:
+    validar_data_limit(data_limit)
+    validar_estat(estat)
+    if all(
+        valor is None
+        for valor in (titol, assignatura, data_limit, estat)
+    ):
+        raise ValueError("Cal indicar almenys un atribut per modificar.")
+
+    tasques = carregar_tasques(ruta)
+    tasca = next((item for item in tasques if item.id == id_tasca), None)
+    if tasca is None:
+        raise ValueError(f"No existeix la tasca amb ID {id_tasca}.")
+
+    if titol is not None:
+        tasca.titol = titol
+    if assignatura is not None:
+        tasca.assignatura = assignatura
+    if data_limit is not None:
+        tasca.data_limit = data_limit
+    if estat is not None:
+        tasca.estat = estat
+
+    desar_tasques(tasques, ruta)
+    return tasca
+
+
 def llistar_tasques(ruta: Path | None = None) -> list[str]:
     tasques = carregar_tasques(ruta)
     if not tasques:
@@ -81,6 +122,34 @@ def construir_parser() -> argparse.ArgumentParser:
         help="Data límit opcional en format YYYY-MM-DD",
     )
 
+    editar = comandes.add_parser("edit", help="Modifica una tasca existent")
+    editar.add_argument(
+        "--id",
+        type=int,
+        required=True,
+        help="Identificador de la tasca",
+    )
+    editar.add_argument(
+        "--title",
+        default=None,
+        help="Títol nou de la tasca",
+    )
+    editar.add_argument(
+        "--subject",
+        default=None,
+        help="Assignatura nova de la tasca",
+    )
+    editar.add_argument(
+        "--due",
+        default=None,
+        help="Data límit nova en format YYYY-MM-DD",
+    )
+    editar.add_argument(
+        "--status",
+        default=None,
+        help="Estat nou de la tasca",
+    )
+
     comandes.add_parser("list", help="Mostra totes les tasques")
     return parser
 
@@ -88,16 +157,25 @@ def construir_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = construir_parser().parse_args(argv)
 
-    if args.comanda == "add":
-        try:
+    try:
+        if args.comanda == "add":
             tasca = afegir_tasca(args.title, args.subject, data_limit=args.due)
-        except ValueError as error:
-            print(f"Error: {error}", file=sys.stderr)
-            return 1
-        print(f"Tasca [ID: {tasca.id}] creada amb èxit")
-    else:
-        for linia in llistar_tasques():
-            print(linia)
+            print(f"Tasca [ID: {tasca.id}] creada amb èxit")
+        elif args.comanda == "edit":
+            tasca = editar_tasca(
+                args.id,
+                titol=args.title,
+                assignatura=args.subject,
+                data_limit=args.due,
+                estat=args.status,
+            )
+            print(f"Tasca [ID: {tasca.id}] modificada amb èxit")
+        else:
+            for linia in llistar_tasques():
+                print(linia)
+    except ValueError as error:
+        print(f"Error: {error}", file=sys.stderr)
+        return 1
     return 0
 
 
