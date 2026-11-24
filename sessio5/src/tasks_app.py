@@ -24,9 +24,15 @@ def ruta_per_defecte() -> Path:
     return Path(__file__).resolve().parent.parent / "data" / "tasks.json"
 
 
-def carregar_tasques(ruta: Path | None = None) -> list[Task]:
+def carregar_tasques(
+    ruta: Path | None = None,
+    *,
+    crear_si_falta: bool = True,
+) -> list[Task]:
     fitxer = ruta if ruta is not None else ruta_per_defecte()
     if not fitxer.exists():
+        if not crear_si_falta:
+            return []
         fitxer.parent.mkdir(parents=True, exist_ok=True)
         fitxer.write_text("[]", encoding="utf-8")
         return []
@@ -62,6 +68,13 @@ def afegir_tasca(
     return tasca
 
 
+def cercar_tasca(tasques: list[Task], id_tasca: int) -> Task:
+    tasca = next((item for item in tasques if item.id == id_tasca), None)
+    if tasca is None:
+        raise ValueError(f"No existeix la tasca amb ID {id_tasca}.")
+    return tasca
+
+
 def editar_tasca(
     id_tasca: int,
     titol: str | None = None,
@@ -78,10 +91,8 @@ def editar_tasca(
     ):
         raise ValueError("Cal indicar almenys un atribut per modificar.")
 
-    tasques = carregar_tasques(ruta)
-    tasca = next((item for item in tasques if item.id == id_tasca), None)
-    if tasca is None:
-        raise ValueError(f"No existeix la tasca amb ID {id_tasca}.")
+    tasques = carregar_tasques(ruta, crear_si_falta=False)
+    tasca = cercar_tasca(tasques, id_tasca)
 
     if titol is not None:
         tasca.titol = titol
@@ -92,6 +103,14 @@ def editar_tasca(
     if estat is not None:
         tasca.estat = estat
 
+    desar_tasques(tasques, ruta)
+    return tasca
+
+
+def completar_tasca(id_tasca: int, ruta: Path | None = None) -> Task:
+    tasques = carregar_tasques(ruta, crear_si_falta=False)
+    tasca = cercar_tasca(tasques, id_tasca)
+    tasca.estat = "completada"
     desar_tasques(tasques, ruta)
     return tasca
 
@@ -150,6 +169,17 @@ def construir_parser() -> argparse.ArgumentParser:
         help="Estat nou de la tasca",
     )
 
+    completar = comandes.add_parser(
+        "complete",
+        help="Marca una tasca com a completada",
+    )
+    completar.add_argument(
+        "--id",
+        type=int,
+        required=True,
+        help="Identificador de la tasca",
+    )
+
     comandes.add_parser("list", help="Mostra totes les tasques")
     return parser
 
@@ -170,6 +200,9 @@ def main(argv: list[str] | None = None) -> int:
                 estat=args.status,
             )
             print(f"Tasca [ID: {tasca.id}] modificada amb èxit")
+        elif args.comanda == "complete":
+            tasca = completar_tasca(args.id)
+            print(f"Tasca [ID: {tasca.id}] completada amb èxit")
         else:
             for linia in llistar_tasques():
                 print(linia)
