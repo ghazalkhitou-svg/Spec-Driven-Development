@@ -1,0 +1,1 @@
+Llegeix SPECIFICATION.md i segueix les regles establertes a AGENTS.md. Genera el conjunt de proves i el codi de l'aplicació.
