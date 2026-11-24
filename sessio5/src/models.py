@@ -1,6 +1,23 @@
 import json
+import re
 from dataclasses import dataclass
+from datetime import date
 from typing import Any
+
+
+PATRO_DATA_LIMIT = re.compile(r"\d{4}-\d{2}-\d{2}")
+MISSATGE_DATA_INVALIDA = "La data límit és incorrecta. Format esperat: YYYY-MM-DD."
+
+
+def validar_data_limit(valor: str | None) -> None:
+    if valor is None:
+        return
+    if not isinstance(valor, str) or not PATRO_DATA_LIMIT.fullmatch(valor):
+        raise ValueError(MISSATGE_DATA_INVALIDA)
+    try:
+        date.fromisoformat(valor)
+    except ValueError as error:
+        raise ValueError(MISSATGE_DATA_INVALIDA) from error
 
 
 @dataclass(init=False)

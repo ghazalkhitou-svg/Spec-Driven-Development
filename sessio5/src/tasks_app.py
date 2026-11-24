@@ -1,10 +1,16 @@
 import argparse
+import sys
 from pathlib import Path
 
 try:
-    from models import Task, tasks_from_json, tasks_to_json
+    from models import Task, tasks_from_json, tasks_to_json, validar_data_limit
 except ModuleNotFoundError:
-    from src.models import Task, tasks_from_json, tasks_to_json
+    from src.models import (
+        Task,
+        tasks_from_json,
+        tasks_to_json,
+        validar_data_limit,
+    )
 
 
 def ruta_per_defecte() -> Path:
@@ -30,9 +36,20 @@ def seguent_id(tasques: list[Task]) -> int:
     return max((tasca.id for tasca in tasques), default=0) + 1
 
 
-def afegir_tasca(titol: str, assignatura: str, ruta: Path | None = None) -> Task:
+def afegir_tasca(
+    titol: str,
+    assignatura: str,
+    ruta: Path | None = None,
+    data_limit: str | None = None,
+) -> Task:
+    validar_data_limit(data_limit)
     tasques = carregar_tasques(ruta)
-    tasca = Task(id=seguent_id(tasques), titol=titol, assignatura=assignatura)
+    tasca = Task(
+        id=seguent_id(tasques),
+        titol=titol,
+        assignatura=assignatura,
+        data_limit=data_limit,
+    )
     tasques.append(tasca)
     desar_tasques(tasques, ruta)
     return tasca
@@ -58,6 +75,11 @@ def construir_parser() -> argparse.ArgumentParser:
     afegir = comandes.add_parser("add", help="Afegeix una nova tasca")
     afegir.add_argument("--title", required=True, help="Títol de la tasca")
     afegir.add_argument("--subject", required=True, help="Assignatura de la tasca")
+    afegir.add_argument(
+        "--due",
+        default=None,
+        help="Data límit opcional en format YYYY-MM-DD",
+    )
 
     comandes.add_parser("list", help="Mostra totes les tasques")
     return parser
@@ -67,7 +89,11 @@ def main(argv: list[str] | None = None) -> int:
     args = construir_parser().parse_args(argv)
 
     if args.comanda == "add":
-        tasca = afegir_tasca(args.title, args.subject)
+        try:
+            tasca = afegir_tasca(args.title, args.subject, data_limit=args.due)
+        except ValueError as error:
+            print(f"Error: {error}", file=sys.stderr)
+            return 1
         print(f"Tasca [ID: {tasca.id}] creada amb èxit")
     else:
         for linia in llistar_tasques():

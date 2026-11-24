@@ -21,13 +21,17 @@ def projecte_temporal(tmp_path: Path) -> Path:
     return projecte
 
 
-def executar(projecte: Path, *args: str) -> subprocess.CompletedProcess[str]:
+def executar(
+    projecte: Path,
+    *args: str,
+    check: bool = True,
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, str(projecte / "src" / "tasks_app.py"), *args],
         cwd=projecte,
         capture_output=True,
         text=True,
-        check=True,
+        check=check,
     )
 
 
@@ -90,4 +94,106 @@ def test_gs03_llistat_amb_registres(projecte_temporal: Path) -> None:
     assert resultat.stdout.splitlines() == [
         "[1] Pràctica 1 (RS) - estat: pendent",
         "[2] Examen parcial (SO) - estat: pendent",
+    ]
+
+
+def test_gs04_alta_amb_data_limit(projecte_temporal: Path) -> None:
+    resultat = executar(
+        projecte_temporal,
+        "add",
+        "--title",
+        "Pràctica 2",
+        "--subject",
+        "RS",
+        "--due",
+        "2026-12-02",
+    )
+
+    assert resultat.stdout.strip() == "Tasca [ID: 1] creada amb èxit"
+    fitxer = projecte_temporal / "data" / "tasks.json"
+    assert json.loads(fitxer.read_text(encoding="utf-8")) == [
+        {
+            "id": 1,
+            "title": "Pràctica 2",
+            "subject": "RS",
+            "status": "pendent",
+            "due": "2026-12-02",
+        }
+    ]
+
+
+@pytest.mark.parametrize(
+    "data",
+    ["2026-2-03", "2026-02-30", "02/12/2026"],
+)
+def test_gs05_data_limit_incorrecta_no_modifica_registre(
+    projecte_temporal: Path,
+    data: str,
+) -> None:
+    fitxer = projecte_temporal / "data" / "tasks.json"
+    fitxer.parent.mkdir(parents=True, exist_ok=True)
+    registre_original = [
+        {
+            "id": 1,
+            "title": "Pràctica 1",
+            "subject": "RS",
+            "status": "pendent",
+        }
+    ]
+    contingut_original = json.dumps(registre_original, ensure_ascii=False)
+    fitxer.write_text(contingut_original, encoding="utf-8")
+
+    resultat = executar(
+        projecte_temporal,
+        "add",
+        "--title",
+        "Prova",
+        "--subject",
+        "RS",
+        "--due",
+        data,
+        check=False,
+    )
+
+    assert resultat.returncode != 0
+    assert "data límit" in resultat.stderr
+    assert fitxer.read_text(encoding="utf-8") == contingut_original
+    assert json.loads(fitxer.read_text(encoding="utf-8")) == registre_original
+
+
+def test_gs14_compatibilitat_amb_registre_v1(projecte_temporal: Path) -> None:
+    fitxer = projecte_temporal / "data" / "tasks.json"
+    fitxer.parent.mkdir(parents=True, exist_ok=True)
+    tasca_v1 = {
+        "id": 1,
+        "title": "Pràctica 1",
+        "subject": "RS",
+        "status": "pendent",
+    }
+    fitxer.write_text(json.dumps([tasca_v1], ensure_ascii=False), encoding="utf-8")
+
+    resultat = executar(
+        projecte_temporal,
+        "add",
+        "--title",
+        "Pràctica 2",
+        "--subject",
+        "SO",
+    )
+
+    assert resultat.stdout.strip() == "Tasca [ID: 2] creada amb èxit"
+    dades = json.loads(fitxer.read_text(encoding="utf-8"))
+    assert dades[0] == tasca_v1
+    assert dades[1] == {
+        "id": 2,
+        "title": "Pràctica 2",
+        "subject": "SO",
+        "status": "pendent",
+    }
+    assert "due" not in dades[1]
+
+    llistat = executar(projecte_temporal, "list")
+    assert llistat.stdout.splitlines() == [
+        "[1] Pràctica 1 (RS) - estat: pendent",
+        "[2] Pràctica 2 (SO) - estat: pendent",
     ]
