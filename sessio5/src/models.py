@@ -9,6 +9,7 @@ class Task:
     titol: str
     assignatura: str
     estat: str
+    data_limit: str | None
 
     def __init__(
         self,
@@ -16,10 +17,12 @@ class Task:
         titol: str | None = None,
         assignatura: str | None = None,
         estat: str = "pendent",
+        data_limit: str | None = None,
         *,
         title: str | None = None,
         subject: str | None = None,
         status: str | None = None,
+        due: str | None = None,
     ) -> None:
         self.id = int(id)
         self.titol = str(titol if titol is not None else (title or ""))
@@ -27,6 +30,8 @@ class Task:
             assignatura if assignatura is not None else (subject or "")
         )
         self.estat = str(status if status is not None else estat)
+        data_final = due if due is not None else data_limit
+        self.data_limit = str(data_final) if data_final is not None else None
 
     @property
     def title(self) -> str:
@@ -40,13 +45,20 @@ class Task:
     def status(self) -> str:
         return self.estat
 
+    @property
+    def due(self) -> str | None:
+        return self.data_limit
+
     def to_dict(self) -> dict[str, Any]:
-        return {
+        resultat: dict[str, Any] = {
             "id": self.id,
             "title": self.titol,
             "subject": self.assignatura,
             "status": self.estat,
         }
+        if self.data_limit is not None:
+            resultat["due"] = self.data_limit
+        return resultat
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "Task":
@@ -55,6 +67,7 @@ class Task:
             titol=data.get("titol", data.get("títol", data.get("title"))),
             assignatura=data.get("assignatura", data.get("subject")),
             estat=data.get("estat", data.get("status", "pendent")),
+            data_limit=data.get("due", data.get("data_limit")),
         )
 
     def to_json(self) -> str:

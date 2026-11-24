@@ -22,7 +22,7 @@ Objectiu: Ampliar el MVP sense perdre les funcionalitats de l'Increment 1.
 
 ### Tasques d'execució (en ordre de dependències)
 
-- [ ] Tasca 2.1: Ampliar `Task` a `src/models.py` amb data límit opcional, serialització JSON i lectura de registres antics. Crear proves unitàries de serialització amb i sense data. (RF-05, RF-13; GS-04, GS-14; dependència: 1.5)
+- [x] Tasca 2.1: Ampliar `Task` a `src/models.py` amb data límit opcional, serialització JSON i lectura de registres antics. Crear proves unitàries de serialització amb i sense data. (RF-05, RF-13; GS-04, GS-14; dependència: 1.5)
 
 - [ ] Tasca 2.2: Ampliar `add` amb `--due`, validació estricta i persistència. Afegir els tests d'alta vàlida i invàlida i compatibilitat. (RF-05, RF-06, RF-13; GS-04, GS-05, GS-14; dependència: 2.1)
 
