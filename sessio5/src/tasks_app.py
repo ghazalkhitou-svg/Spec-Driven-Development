@@ -1,5 +1,6 @@
 import argparse
 import sys
+from datetime import date
 from pathlib import Path
 
 try:
@@ -115,14 +116,37 @@ def completar_tasca(id_tasca: int, ruta: Path | None = None) -> Task:
     return tasca
 
 
-def llistar_tasques(ruta: Path | None = None) -> list[str]:
+def etiqueta_temporal(tasca: Task, avui: date) -> str | None:
+    if tasca.estat != "pendent" or tasca.data_limit is None:
+        return None
+    data_limit = date.fromisoformat(tasca.data_limit)
+    dies = (data_limit - avui).days
+    if dies < 0:
+        return "[CADUCADA]"
+    if dies <= 6:
+        return "[URGENT]"
+    return None
+
+
+def llistar_tasques(ruta: Path | None = None, avui: date | None = None) -> list[str]:
     tasques = carregar_tasques(ruta)
     if not tasques:
         return ["Registre de tasques buit."]
-    return [
-        f"[{tasca.id}] {tasca.titol} ({tasca.assignatura}) - estat: {tasca.estat}"
-        for tasca in tasques
-    ]
+
+    data_actual = avui if avui is not None else date.today()
+    linies: list[str] = []
+    for tasca in tasques:
+        linia = (
+            f"[{tasca.id}] {tasca.titol} ({tasca.assignatura})"
+            f" - estat: {tasca.estat}"
+        )
+        if tasca.data_limit is not None:
+            linia += f" - data límit: {tasca.data_limit}"
+        etiqueta = etiqueta_temporal(tasca, data_actual)
+        if etiqueta is not None:
+            linia += f" {etiqueta}"
+        linies.append(linia)
+    return linies
 
 
 def construir_parser() -> argparse.ArgumentParser:

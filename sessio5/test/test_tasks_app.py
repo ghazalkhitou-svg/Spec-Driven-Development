@@ -2,6 +2,7 @@ import json
 import shutil
 import subprocess
 import sys
+from datetime import date, timedelta
 from pathlib import Path
 
 import pytest
@@ -270,7 +271,9 @@ def test_gs07_edicio_de_diversos_atributs(projecte_temporal: Path) -> None:
     assert json.loads(fitxer.read_text(encoding="utf-8")) == [esperat]
 
     llistat = executar(projecte_temporal, "list")
-    assert llistat.stdout.splitlines() == ["[1] Examen final (SO) - estat: completada"]
+    assert llistat.stdout.splitlines() == [
+        "[1] Examen final (SO) - estat: completada - data límit: 2026-12-15"
+    ]
 
 
 def test_gs09_id_inexistent_en_edit(projecte_temporal: Path) -> None:
@@ -407,4 +410,117 @@ def test_gs09_id_inexistent_en_complete(projecte_temporal: Path) -> None:
 
     assert resultat.returncode != 0
     assert "ID 99" in resultat.stderr
+    assert fitxer.read_text(encoding="utf-8") == contingut_original
+
+
+def test_gs10_llistat_caducades_i_urgents(projecte_temporal: Path) -> None:
+    avui = date.today()
+    desplaçaments = (-1, 0, 1, 6, 7, 8)
+    etiquetes = ("[CADUCADA]", "[URGENT]", "[URGENT]", "[URGENT]", None, None)
+    tasques = []
+    esperades = []
+
+    for id_tasca, (dies, etiqueta) in enumerate(
+        zip(desplaçaments, etiquetes),
+        start=1,
+    ):
+        data_limit = (avui + timedelta(days=dies)).isoformat()
+        tasques.append(
+            {
+                "id": id_tasca,
+                "title": f"Tasca {id_tasca}",
+                "subject": "RS",
+                "status": "pendent",
+                "due": data_limit,
+            }
+        )
+        linia = (
+            f"[{id_tasca}] Tasca {id_tasca} (RS) - estat: pendent"
+            f" - data límit: {data_limit}"
+        )
+        if etiqueta is not None:
+            linia += f" {etiqueta}"
+        esperades.append(linia)
+
+    fitxer = projecte_temporal / "data" / "tasks.json"
+    fitxer.parent.mkdir(parents=True, exist_ok=True)
+    contingut_original = json.dumps(tasques, ensure_ascii=False)
+    fitxer.write_text(contingut_original, encoding="utf-8")
+
+    resultat = executar(projecte_temporal, "list")
+
+    assert resultat.stdout.splitlines() == esperades
+    assert fitxer.read_text(encoding="utf-8") == contingut_original
+
+
+def test_gs11_tasques_sense_etiqueta_temporal(projecte_temporal: Path) -> None:
+    avui = date.today()
+    data_passada = (avui - timedelta(days=1)).isoformat()
+    data_proxima = (avui + timedelta(days=1)).isoformat()
+    registre = [
+        {
+            "id": 1,
+            "title": "Completada passada",
+            "subject": "RS",
+            "status": "completada",
+            "due": data_passada,
+        },
+        {
+            "id": 2,
+            "title": "Completada pròxima",
+            "subject": "SO",
+            "status": "completada",
+            "due": data_proxima,
+        },
+        {
+            "id": 3,
+            "title": "Sense data",
+            "subject": "RS",
+            "status": "pendent",
+        },
+    ]
+
+    fitxer = projecte_temporal / "data" / "tasks.json"
+    fitxer.parent.mkdir(parents=True, exist_ok=True)
+    contingut_original = json.dumps(registre, ensure_ascii=False)
+    fitxer.write_text(contingut_original, encoding="utf-8")
+
+    resultat = executar(projecte_temporal, "list")
+
+    assert resultat.stdout.splitlines() == [
+        f"[1] Completada passada (RS) - estat: completada"
+        f" - data límit: {data_passada}",
+        f"[2] Completada pròxima (SO) - estat: completada"
+        f" - data límit: {data_proxima}",
+        "[3] Sense data (RS) - estat: pendent",
+    ]
+    assert "[CADUCADA]" not in resultat.stdout
+    assert "[URGENT]" not in resultat.stdout
+    assert fitxer.read_text(encoding="utf-8") == contingut_original
+
+
+def test_gs15_format_llistat_amb_data_limit(projecte_temporal: Path) -> None:
+    avui = date.today()
+    data_limit = (avui + timedelta(days=1)).isoformat()
+    registre = [
+        {
+            "id": 1,
+            "title": "Pràctica 2",
+            "subject": "RS",
+            "status": "pendent",
+            "due": data_limit,
+        }
+    ]
+
+    fitxer = projecte_temporal / "data" / "tasks.json"
+    fitxer.parent.mkdir(parents=True, exist_ok=True)
+    contingut_original = json.dumps(registre, ensure_ascii=False)
+    fitxer.write_text(contingut_original, encoding="utf-8")
+
+    resultat = executar(projecte_temporal, "list")
+
+    assert resultat.stdout.strip() == (
+        f"[1] Pràctica 2 (RS) - estat: pendent"
+        f" - data límit: {data_limit} [URGENT]"
+    )
     assert fitxer.read_text(encoding="utf-8") == contingut_original
