@@ -32,6 +32,4 @@ Objectiu: Ampliar el MVP sense perdre les funcionalitats de l'Increment 1.
 
 - [x] Tasca 2.5: Ampliar `list` amb data límit i classificació temporal excloent; afegir tests de límits de dies i tasques completades o sense data. (RF-04, RF-11, RF-12, RF-13; GS-10, GS-11, GS-14, GS-15; dependència: 2.4)
 
-- [ ] Tasca 2.6: Executar `python3 -m pytest test`, verificar tots els escenaris GS-01–GS-15, comprovar el compliment dels RF-01–RF-13 i revisar que els tests no alteren el registre real. (RF-01–RF-13; GS-01–GS-15; dependència: 2.5)
-
-Nota: Les comprovacions que depenen d'una funcionalitat posterior es validen completament quan aquesta estigui implementada; cada tasca ha de superar les proves aplicables al seu abast.
+- [x] Tasca 2.6: Executar `python3 -m pytest test`, verificar tots els escenaris GS-01–GS-15, comprovar el compliment dels RF-01–RF-13 i revisar que els tests no alteren el registre real. (RF-01–RF-13; GS-01–GS-15; dependència: 2.5)
