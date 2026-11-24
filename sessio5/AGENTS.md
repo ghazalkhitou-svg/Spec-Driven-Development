@@ -8,7 +8,7 @@
 ## Comandes de Desenvolupament
 - Executar aplicació: `python3 src/tasks_app.py`
 - Executar tots els tests: `python3 -m pytest test`
-- Executar test únic: `python3 -m pytest test/test_task.py`
+- Executar test únic: `python3 -m pytest test/test_tasks_app.py`
 
 ## Convencions de Codi
 - Estil: PEP8.
