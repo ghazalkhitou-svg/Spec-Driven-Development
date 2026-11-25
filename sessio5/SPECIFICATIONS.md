@@ -25,6 +25,7 @@ classDiagram
 - RF-04: El sistema tasks_app ha de proveir a l’estudiant la capacitat de visualitzar totes les tasques registrades (incloent-hi el seu ID, títol, assignatura i estat) mitjançant el comandament list.
 - RF-05: El sistema tasks_app ha de proveir a l'estudiant la capacitat de canviar l'estat d'una tasca pendent a completada mitjançant el comandament complete --id <id> .
 - RF-06: El sistema tasks_app ha de proveir a l'estudiant la capacitat de canviar l'estat d'una tasca modificada pendent mitjançant el comandament undo --id <id>.
+- RF-07: El sistema tasks_app ha de proveir a l'estudiant la capacitat d'eliminar una tasca existent mitjançant el comandament delete --id <id> .
 
 ## 5. Criteris d’acceptació i proves (Gherkin scenarios)
 - GS-01: Creació correcta d'una tasca
@@ -76,3 +77,15 @@ el sistema imprimeix un missatge de `Tasca [ID: (el id correcpondiente)] ja est�
 
 - GS-08: Intentar canviar d'estat una tasca no existent, aleshores el sistema imprimeix un missatge
 `Tasca [ID: (el id correcpondiente)] no existeix`
+
+- GS-09: Eliminar una tasca existent, quan el fitxer `data/tasks.json` conté les següents tasques:
+| id | títol          | assignatura | estat   |
+    | 1  | Pràctica 1     | RS          | pendent |
+    | 2  | Examen parcial | SO          | pendent |
+    ha de quedar: 
+    | id | títol          | assignatura | estat   |
+    | 2  | Examen parcial | SO          | pendent |
+    i ha de mostrar un missatge de confirmació
+  
+- GS-10: Eliminar una tasca no existent, aleshores el sistema imprimeix el missatge `Tasca [ID: (el id correcpondiente)] no existeix`
+

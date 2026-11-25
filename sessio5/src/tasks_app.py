@@ -63,6 +63,16 @@ def canviar_estat(
     return f"Tasca [ID: {id_tasca}] no existeix"
 
 
+def eliminar_tasca(id_tasca: int, ruta: Path | None = None) -> str:
+    tasques = carregar_tasques(ruta)
+    for posicio, tasca in enumerate(tasques):
+        if tasca.id == id_tasca:
+            del tasques[posicio]
+            desar_tasques(tasques, ruta)
+            return f"Tasca [ID: {id_tasca}] eliminada amb èxit"
+    return f"Tasca [ID: {id_tasca}] no existeix"
+
+
 def construir_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="tasks_app",
@@ -81,6 +91,9 @@ def construir_parser() -> argparse.ArgumentParser:
 
     desfer = comandes.add_parser("undo", help="Marca una tasca com a pendent")
     desfer.add_argument("--id", required=True, type=int, help="ID de la tasca")
+
+    eliminar = comandes.add_parser("delete", help="Elimina una tasca existent")
+    eliminar.add_argument("--id", required=True, type=int, help="ID de la tasca")
     return parser
 
 
@@ -93,6 +106,8 @@ def main(argv: list[str] | None = None) -> int:
     elif args.comanda in ("complete", "undo"):
         estat_objectiu = "completada" if args.comanda == "complete" else "pendent"
         print(canviar_estat(args.id, estat_objectiu))
+    elif args.comanda == "delete":
+        print(eliminar_tasca(args.id))
     else:
         for linia in llistar_tasques():
             print(linia)
