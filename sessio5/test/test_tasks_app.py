@@ -169,3 +169,21 @@ def test_gs08_canviar_estat_tasca_inexistent(
 
     assert resultat.stdout.strip() == "Tasca [ID: 99] no existeix"
     assert tasques_desades(projecte_temporal) == TASQUES_INICIALS
+
+
+def test_gs09_eliminar_tasca_existent(projecte_temporal: Path) -> None:
+    escriure_tasques(projecte_temporal, TASQUES_INICIALS)
+
+    resultat = executar(projecte_temporal, "delete", "--id", "1")
+
+    assert resultat.stdout.strip() == "Tasca [ID: 1] eliminada amb èxit"
+    assert tasques_desades(projecte_temporal) == [TASQUES_INICIALS[1]]
+
+
+def test_gs10_eliminar_tasca_inexistent(projecte_temporal: Path) -> None:
+    escriure_tasques(projecte_temporal, TASQUES_INICIALS)
+
+    resultat = executar(projecte_temporal, "delete", "--id", "99")
+
+    assert resultat.stdout.strip() == "Tasca [ID: 99] no existeix"
+    assert tasques_desades(projecte_temporal) == TASQUES_INICIALS
