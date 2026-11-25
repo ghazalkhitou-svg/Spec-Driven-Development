@@ -48,6 +48,21 @@ def llistar_tasques(ruta: Path | None = None) -> list[str]:
     ]
 
 
+def canviar_estat(
+    id_tasca: int, estat_objectiu: str, ruta: Path | None = None
+) -> str:
+    tasques = carregar_tasques(ruta)
+    for tasca in tasques:
+        if tasca.id != id_tasca:
+            continue
+        if tasca.estat == estat_objectiu:
+            return f"Tasca [ID: {id_tasca}] ja està marcada com a {estat_objectiu}"
+        tasca.estat = estat_objectiu
+        desar_tasques(tasques, ruta)
+        return f"Tasca [ID: {id_tasca}] marcada com a {estat_objectiu}"
+    return f"Tasca [ID: {id_tasca}] no existeix"
+
+
 def construir_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="tasks_app",
@@ -60,6 +75,12 @@ def construir_parser() -> argparse.ArgumentParser:
     afegir.add_argument("--subject", required=True, help="Assignatura de la tasca")
 
     comandes.add_parser("list", help="Mostra totes les tasques")
+
+    completar = comandes.add_parser("complete", help="Marca una tasca com a completada")
+    completar.add_argument("--id", required=True, type=int, help="ID de la tasca")
+
+    desfer = comandes.add_parser("undo", help="Marca una tasca com a pendent")
+    desfer.add_argument("--id", required=True, type=int, help="ID de la tasca")
     return parser
 
 
@@ -69,6 +90,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.comanda == "add":
         tasca = afegir_tasca(args.title, args.subject)
         print(f"Tasca [ID: {tasca.id}] creada amb èxit")
+    elif args.comanda in ("complete", "undo"):
+        estat_objectiu = "completada" if args.comanda == "complete" else "pendent"
+        print(canviar_estat(args.id, estat_objectiu))
     else:
         for linia in llistar_tasques():
             print(linia)

@@ -23,6 +23,8 @@ classDiagram
 - RF-02 : Si el fitxer `data/tasks.json` no existeix, el sistema tasks_app ha de crear `data/tasks.json`  inicialitzat amb una llista JSON buida ([])
 - RF-03 : El sistema tasks_app ha de proveir a l'estudiant la capacitat de crear una nova tasca amb estat 'pendent' mitjançant el comandament add --title <títol> --subject <assignatura>.
 - RF-04: El sistema tasks_app ha de proveir a l’estudiant la capacitat de visualitzar totes les tasques registrades (incloent-hi el seu ID, títol, assignatura i estat) mitjançant el comandament list.
+- RF-05: El sistema tasks_app ha de proveir a l'estudiant la capacitat de canviar l'estat d'una tasca pendent a completada mitjançant el comandament complete --id <id> .
+- RF-06: El sistema tasks_app ha de proveir a l'estudiant la capacitat de canviar l'estat d'una tasca modificada pendent mitjançant el comandament undo --id <id>.
 
 ## 5. Criteris d’acceptació i proves (Gherkin scenarios)
 - GS-01: Creació correcta d'una tasca
@@ -45,3 +47,32 @@ classDiagram
   aleshores el sistema mostra per pantalla:
     "[1] Pràctica 1 (RS) - estat: pendent"
     "[2] Examen parcial (SO) - estat: pendent"
+
+- GS-04: Modificar l'estat d'una tasca existent a completat quan té les següents tasques:
+| id | títol          | assignatura | estat   |
+    | 1  | Pràctica 1     | RS          | pendent |
+    | 2  | Examen parcial | SO          | pendent |
+  hauria de canviar-les a:
+  | id | títol          | assignatura | estat   |
+    | 1  | Pràctica 1     | RS          | completada |
+    | 2  | Examen parcial | SO          | pendent |
+  el sistema mostra un missatge de confirmació.
+
+- GS-05: Modificar l'estat d'una tasca completada a pendent quan té les següents tasques:
+| id | títol          | assignatura | estat   |
+    | 1  | Pràctica 1     | RS          | pendent |
+    | 2  | Examen parcial | SO          | pendent |
+  hauria de canviar-les a:
+  | id | títol          | assignatura | estat   |
+    | 1  | Pràctica 1     | RS          | completada |
+    | 2  | Examen parcial | SO          | pendent |
+    el sistema mostra un missatge de confirmació.
+
+- GS-06: Intentar marcar com a completada una tasca que ja està en aquest estat, aleshores
+el sistema imprimeix un missatge de `Tasca [ID: (el id correcpondiente)] ja està marcada com a completada`
+
+- GS-07: Intentar marcar com a pendent una tasca que ja està en aquest estat, aleshores
+el sistema imprimeix un missatge de `Tasca [ID: (el id correcpondiente)] ja està marcada com a pendent`
+
+- GS-08: Intentar canviar d'estat una tasca no existent, aleshores el sistema imprimeix un missatge
+`Tasca [ID: (el id correcpondiente)] no existeix`
