@@ -6,6 +6,9 @@ Tasks_app és una eina CLI lleugera per ajudar als estudiants a gestionar les se
 ## 2. User Stories (Històries d'Usuari)
 - US-01: Com a estudiant, vull afegir una tasca amb títol i assignatura per recordar els meus deures.
 - US-02: Com a estudiant, vull veure la llista de tasques pendents per organitzar el meu temps.
+- US-03: Com a estudiant, vull poder marcar una tasca com a completada per indicar quan ha finalitzat.
+- US-04: Com a estudiant, vull poder marcar una tasca completada com a pendent per indicar que encara falta alguna cosa a fer.
+- US-05: Com a estudiant, vull poder eliminar una tasca mitjançant l'id per no haver de mantenir registre de tasques que ja no són importants.
 
 ## 3. Model de Dades (Mermaid)
 ```mermaid
