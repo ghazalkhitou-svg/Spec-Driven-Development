@@ -205,8 +205,16 @@ def resum_tasques(ruta: Path | None = None, avui: date | None = None) -> list[st
     ]
 
 
-def llistar_tasques(ruta: Path | None = None, avui: date | None = None) -> list[str]:
+def llistar_tasques(
+    ruta: Path | None = None,
+    avui: date | None = None,
+    subject: str | None = None,
+) -> list[str]:
     tasques = carregar_tasques(ruta)
+    if subject is not None:
+        tasques = [tasca for tasca in tasques if tasca.assignatura == subject]
+        if not tasques:
+            return ["No hi ha cap tasca d'aquesta assignatura"]
     if not tasques:
         return ["Registre de tasques buit."]
 
@@ -261,6 +269,11 @@ def construir_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Mostra un resum de les tasques",
     )
+    llistar.add_argument(
+        "--subject",
+        default=None,
+        help="Filtra les tasques per assignatura",
+    )
 
     completar = comandes.add_parser("complete", help="Marca una tasca com a completada")
     completar.add_argument("--id", required=True, type=int, help="ID de la tasca")
@@ -299,7 +312,11 @@ def main(argv: list[str] | None = None) -> int:
         elif args.comanda == "delete":
             print(eliminar_tasca(args.id))
         else:
-            linies = resum_tasques() if args.short else llistar_tasques()
+            linies = (
+                resum_tasques()
+                if args.short
+                else llistar_tasques(subject=args.subject)
+            )
             for linia in linies:
                 print(linia)
     except ValueError as error:
