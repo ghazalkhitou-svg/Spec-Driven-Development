@@ -43,9 +43,9 @@ Objectiu: Ampliar el MVP sense perdre les funcionalitats de l'Increment 1.
 - [x] Tasca 2.6: Executar `python3 -m pytest test`, verificar tots els escenaris GS-01–GS-22, comprovar el compliment dels RF-01–RF-13 i revisar que els tests no alteren el registre real. (RF-01–RF-16; GS-01–GS-22; dependència: 2.5)
 
 ## Increment 3: Resum, filtratge per assignatura, filtratge per paraula clau
-- [/] Tasca 3.1: Ampliar `list` amb `--short`. (RF: RF-17 | GS: GS-23)
+- [x] Tasca 3.1: Ampliar `list` amb `--short`. (RF: RF-17 | GS: GS-23)
 
-- Tasca 3.2: A `test/test_tasks_app.py` afegir els tests dels escenaris GS-23
+- [x] Tasca 3.2: A `test/test_tasks_app.py` afegir els tests dels escenaris GS-23
 
 - Tasca 3.3: Tasca 3.3: Ampliar `list` amb `--subject`. (RF: RF-18 | GS: GS-24, GS-25)
 

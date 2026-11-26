@@ -622,3 +622,49 @@ def test_gs22_format_llistat_amb_data_limit(projecte_temporal: Path) -> None:
         f" - data límit: {data_limit} [URGENT]"
     )
     assert fitxer.read_text(encoding="utf-8") == contingut_original
+
+
+def test_gs23_resum_de_les_tasques(projecte_temporal: Path) -> None:
+    avui = date.today()
+    registre = [
+        {"id": 1, "title": "Pràctica 1", "subject": "RS", "status": "pendent"},
+        {"id": 2, "title": "Examen parcial", "subject": "SO", "status": "pendent"},
+        {
+            "id": 3,
+            "title": "Pràctica 2",
+            "subject": "RS",
+            "status": "pendent",
+            "due": (avui - timedelta(days=1)).isoformat(),
+        },
+        {
+            "id": 4,
+            "title": "Examen parcial 2",
+            "subject": "SO",
+            "status": "pendent",
+            "due": (avui - timedelta(days=2)).isoformat(),
+        },
+        {
+            "id": 5,
+            "title": "Pràctica 3",
+            "subject": "RS",
+            "status": "pendent",
+            "due": (avui + timedelta(days=1)).isoformat(),
+        },
+        {
+            "id": 6,
+            "title": "Examen final",
+            "subject": "SO",
+            "status": "completada",
+        },
+    ]
+    escriure_tasques(projecte_temporal, registre)
+
+    resultat = executar(projecte_temporal, "list", "--short")
+
+    assert resultat.stdout.splitlines() == [
+        "Nombre total de tasques: 6",
+        "Nombre total de tasques pendents: 2",
+        "Nombre total de tasques completades: 1",
+        "Nombre total de tasques urgents: 1",
+        "Nombre total de tasques caducades: 2",
+    ]
