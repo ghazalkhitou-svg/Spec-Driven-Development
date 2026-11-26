@@ -11,12 +11,20 @@ Tasks_app és una eina CLI lleugera per ajudar als estudiants a gestionar les se
 ## 2. User Stories (Històries d'Usuari)
 - US-01: Com a estudiant, vull afegir una tasca amb títol i assignatura per recordar els meus deures.
 - US-02: Com a estudiant, vull veure la llista de tasques pendents per organitzar el meu temps.
+- US-03: Com a estudiant, vull poder marcar una tasca com a completada per indicar quan ha finalitzat.
+- US-04: Com a estudiant, vull poder marcar una tasca completada com a pendent per indicar que encara falta alguna cosa a fer.
+- US-05: Com a estudiant, vull poder eliminar una tasca mitjançant l'id per no haver de mantenir registre de tasques que ja no són importants.
 
-### Increment 2 — Noves històries d'usuari
-- US-03: Com a estudiant, vull indicar la data límit d'una tasca per planificar-ne el lliurament.
-- US-04: Com a estudiant, vull modificar les dades d'una tasca per corregir errors de registre.
-- US-05: Com a estudiant, vull marcar una tasca com a completada per fer un seguiment del meu progrés.
-- US-06: Com a estudiant, vull identificar les tasques pendents urgents i caducades per prioritzar la feina.
+### Increment 2
+- US-06: Com a estudiant, vull indicar la data límit d'una tasca per planificar-ne el lliurament.
+- US-07: Com a estudiant, vull modificar les dades d'una tasca per corregir errors de registre.
+- US-08: Com a estudiant, vull marcar una tasca com a completada per fer un seguiment del meu progrés.
+- US-09: Com a estudiant, vull identificar les tasques pendents urgents i caducades per prioritzar la feina.
+
+### Increment 3 - Noves històries d'usuari
+- US-10: Com a estudiant, vull veure un resum de la quantitat total de les meves tasques i de la quantitat de les tasques de cada estat per veure ràpidament una visió general de les meves tasques-
+- US-11: Com a estudiant, vull filtrar les tasques d'una assignatura específica per trobar-les de manera ràpida i més còmoda.
+- US-12: Com a estudiant, vull filtrar les tasques segons una paraula clau per poder trobar ràpidament aquelles tasques.
 
 ## 3. Model de Dades (Mermaid)
 ```mermaid
@@ -39,7 +47,7 @@ classDiagram
 - RF-06: El sistema tasks_app ha de proveir a l'estudiant la capacitat de canviar l'estat d'una tasca modificada pendent mitjançant el comandament undo --id <id>.
 - RF-07: El sistema tasks_app ha de proveir a l'estudiant la capacitat d'eliminar una tasca existent mitjançant el comandament delete --id <id> .
 
-### Increment 2 — Nous requisits (SOPHIST)
+### Increment 2
 
 - RF-08 (US-03): El sistema Tasks_app ha de proveir a l'estudiant la capacitat d'indicar una data límit opcional en crear una tasca mitjançant l'opció `--due YYYY-MM-DD` del comandament `add`.
 
@@ -66,6 +74,14 @@ classDiagram
 - En crear una tasca, l'estat inicial continua sent `pendent`. Els estats vàlids per a l'edició són `pendent` i `completada`.
 - El llistat conserva el format de v1.0 i, si hi ha data límit, hi afegeix ` - data límit: YYYY-MM-DD`. Si correspon una etiqueta temporal, l'afegeix al final, separada per un espai. No mostra cap etiqueta si la tasca està completada, no té data límit o en falten set dies naturals o més. Les etiquetes són excloents i no es desen al JSON.
 - Les operacions `edit` i `complete` correctes finalitzen amb codi 0 i confirmen respectivament `Tasca [ID: <ID>] modificada amb èxit` i `Tasca [ID: <ID>] completada amb èxit`. Els errors indiquen el motiu a stderr. Una operació incorrecta no modifica el contingut del registre.
+
+### Increment 3 — Nous requisits (SOPHIST)
+- RF-17: El sistema tasks_apps ha de proveir l'estudiant la capacitat de visualitzar un resum de les tasques registrades (la quantitat de tasques totals i la quantitat de tasques de les categories pendents, completades, caducades i urgents) mitjançant l'opció `--short` a la comanda `list`.
+
+- RF-18: El sistema tasks_app ha de proveir l'estudiant la capacitat de filtrar les seves tasques segons l'assignatura a la que pertanyen mitjançant l'opció `--subject <assignatura>` a la comanda `list`.
+
+- RF-19: El sistema tasks_app ha de proveir l'estudiant la capacitat de filtrar les seves tasques segons una paraula clau al títol mitjançant l'opció `--find <paraula>` a la comanda `list`.
+
 
 ## 5. Criteris d’acceptació i proves (Gherkin scenarios)
 
@@ -134,7 +150,7 @@ el sistema imprimeix un missatge de `Tasca [ID: (el id correcpondiente)] ja est�
   
 - GS-10: Eliminar una tasca no existent, aleshores el sistema imprimeix el missatge `Tasca [ID: (el id correcpondiente)] no existeix`
 
-### Increment 2 — Nous escenaris Gherkin
+### Increment 2
 
 Les dates relatives a la data actual s'han de calcular de manera reproduïble en les proves (data controlada o dates relatives al dia d'execució).
 
@@ -227,3 +243,80 @@ Atès que la data local actual és el 24/11/2026 (o una data equivalent controla
 I existeix la tasca pendent 1 amb títol `Pràctica 2`, assignatura `RS` i data límit `2026-11-25`
 Quan l'estudiant executa `list`
 Aleshores el sistema mostra `[1] Pràctica 2 (RS) - estat: pendent - data límit: 2026-11-25 [URGENT]` (amb la data equivalent si escau).
+
+### Increment 3 — Nous escenaris Gherkin
+- GS-23: Resum de les tasques
+  Atès que el fitxer `data/tasks.json` conté les següents tasques:
+
+  | id | títol            | assignatura | estat      |
+  | 1  | Pràctica 1       | RS          | pendent    |
+  | 2  | Examen parcial   | SO          | pendent    |
+  | 3  | Pràctica 2       | RS          | caducada   |
+  | 4  | Examen parcial 2 | SO          | caducada   |
+  | 5  | Pràctica 3       | RS          | urgent     |
+
+  quan l’estudiant executa `python src/tasks_app.py list --short`
+  aleshores el sistema mostra per pantalla:
+    "Nombre total de tasques: 6"
+    "Nombre total de tasques pendents: 2"
+    "Nombre total de tasques completades: 0"
+    "Nombre total de tasques urgents: 1"
+    "Nombre total de tasques caducades: 2"
+
+- GS-24: Filtratge de tasques per assignatura quan té tasques assignades
+  Atès que el fitxer `data/tasks.json` conté les següents tasques:
+
+  | id | títol            | assignatura | estat      |
+  | 1  | Pràctica 1       | RS          | pendent    |
+  | 2  | Examen parcial   | SO          | pendent    |
+  | 3  | Pràctica 2       | RS          | caducada   |
+  | 4  | Examen parcial 2 | SO          | caducada   |
+  | 5  | Pràctica 3       | RS          | urgent     |
+
+  quan l’estudiant executa `python src/tasks_app.py list --subject RS`
+  aleshores el sistema mostra per pantalla:
+  "[1] Pràctica 1 (RS) - estat: pendent"
+  "[3] Pràctica 2 (RS) - estat: caducada"
+  "[5] Pràctica 3 (RS) - estat: urgent"
+
+- GS-25: Filtratge de tasques per assignatura sense tasques
+Atès que el fitxer `data/tasks.json` conté les següents tasques:
+
+  | id | títol            | assignatura | estat      |
+  | 1  | Pràctica 1       | RS          | pendent    |
+  | 2  | Pràctica 2       | RS          | caducada   |
+  | 3  | Pràctica 3       | RS          | urgent     |
+
+  quan l’estudiant executa `python src/tasks_app.py list --subject SO`
+  aleshores el sistema mostra per pantalla:
+  "No hi ha cap tasca d'aquesta assignatura"
+
+- GS-26: Filtratge de dades per paraula clau
+Atès que el fitxer `data/tasks.json` conté les següents tasques:
+
+  | id | títol            | assignatura | estat      |
+  | 1  | Pràctica 1       | RS          | pendent    |
+  | 2  | Examen parcial   | SO          | pendent    |
+  | 3  | Pràctica 2       | RS          | caducada   |
+  | 4  | Examen parcial 2 | SO          | caducada   |
+  | 5  | Pràctica 3       | RS          | urgent     |
+
+  quan l’estudiant executa `python src/tasks_app.py list --find ctica`
+  aleshores el sistema mostra per pantalla:
+    "[1] Pràctica 1 (RS) - estat: pendent"
+    "[3] Pràctica 2 (RS) - estat: caducada"
+    "[5] Pràctica 3 (RS) - estat: urgent"
+
+- GS-27: Filtratge de dades per paraula clau sense resultats
+Atès que el fitxer `data/tasks.json` conté les següents tasques:
+
+  | id | títol            | assignatura | estat      |
+  | 1  | Pràctica 1       | RS          | pendent    |
+  | 2  | Examen parcial   | SO          | pendent    |
+  | 3  | Pràctica 2       | RS          | caducada   |
+  | 4  | Examen parcial 2 | SO          | caducada   |
+  | 5  | Pràctica 3       | RS          | urgent     |
+
+  quan l’estudiant executa `python src/tasks_app.py list --find wwww`
+  aleshores el sistema mostra per pantalla:
+    "Cap tasca conté wwww en el seu títol"
