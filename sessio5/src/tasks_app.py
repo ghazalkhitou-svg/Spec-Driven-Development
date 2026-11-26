@@ -209,12 +209,17 @@ def llistar_tasques(
     ruta: Path | None = None,
     avui: date | None = None,
     subject: str | None = None,
+    find: str | None = None,
 ) -> list[str]:
     tasques = carregar_tasques(ruta)
     if subject is not None:
         tasques = [tasca for tasca in tasques if tasca.assignatura == subject]
         if not tasques:
             return ["No hi ha cap tasca d'aquesta assignatura"]
+    if find is not None:
+        tasques = [tasca for tasca in tasques if find in tasca.titol]
+        if not tasques:
+            return [f"Cap tasca conté {find} en el seu títol"]
     if not tasques:
         return ["Registre de tasques buit."]
 
@@ -274,6 +279,11 @@ def construir_parser() -> argparse.ArgumentParser:
         default=None,
         help="Filtra les tasques per assignatura",
     )
+    llistar.add_argument(
+        "--find",
+        default=None,
+        help="Filtra les tasques per paraula clau al títol",
+    )
 
     completar = comandes.add_parser("complete", help="Marca una tasca com a completada")
     completar.add_argument("--id", required=True, type=int, help="ID de la tasca")
@@ -315,7 +325,7 @@ def main(argv: list[str] | None = None) -> int:
             linies = (
                 resum_tasques()
                 if args.short
-                else llistar_tasques(subject=args.subject)
+                else llistar_tasques(subject=args.subject, find=args.find)
             )
             for linia in linies:
                 print(linia)
