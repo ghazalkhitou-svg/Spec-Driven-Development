@@ -49,7 +49,7 @@ Objectiu: Ampliar el MVP sense perdre les funcionalitats de l'Increment 1.
 
 - [x] Tasca 3.3: Ampliar `list` amb `--subject`. (RF: RF-18 | GS: GS-24, GS-25)
 
-- Tasca 3.4: A `test/test_tasks_app.py` afegir els tests dels escenaris GS-24 i GS-25
+- [x] Tasca 3.4: A `test/test_tasks_app.py` afegir els tests dels escenaris GS-24 i GS-25
 
 - Tasca 3.5: Tasca 3.3: `list` amb `--find`. (RF: RF-19 | GS: GS-26, GS-27)
 

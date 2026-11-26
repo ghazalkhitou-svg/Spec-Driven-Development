@@ -668,3 +668,77 @@ def test_gs23_resum_de_les_tasques(projecte_temporal: Path) -> None:
         "Nombre total de tasques urgents: 1",
         "Nombre total de tasques caducades: 2",
     ]
+
+
+def test_gs24_filtratge_per_assignatura_amb_tasques(
+    projecte_temporal: Path,
+) -> None:
+    avui = date.today()
+    data_caducada = (avui - timedelta(days=1)).isoformat()
+    data_urgent = (avui + timedelta(days=1)).isoformat()
+    registre = [
+        {"id": 1, "title": "Pràctica 1", "subject": "RS", "status": "pendent"},
+        {"id": 2, "title": "Examen parcial", "subject": "SO", "status": "pendent"},
+        {
+            "id": 3,
+            "title": "Pràctica 2",
+            "subject": "RS",
+            "status": "pendent",
+            "due": data_caducada,
+        },
+        {
+            "id": 4,
+            "title": "Examen parcial 2",
+            "subject": "SO",
+            "status": "pendent",
+            "due": (avui - timedelta(days=2)).isoformat(),
+        },
+        {
+            "id": 5,
+            "title": "Pràctica 3",
+            "subject": "RS",
+            "status": "pendent",
+            "due": data_urgent,
+        },
+    ]
+    escriure_tasques(projecte_temporal, registre)
+
+    resultat = executar(projecte_temporal, "list", "--subject", "RS")
+
+    assert resultat.stdout.splitlines() == [
+        "[1] Pràctica 1 (RS) - estat: pendent",
+        f"[3] Pràctica 2 (RS) - estat: pendent"
+        f" - data límit: {data_caducada} [CADUCADA]",
+        f"[5] Pràctica 3 (RS) - estat: pendent"
+        f" - data límit: {data_urgent} [URGENT]",
+    ]
+    assert tasques_desades(projecte_temporal) == registre
+
+
+def test_gs25_filtratge_per_assignatura_sense_tasques(
+    projecte_temporal: Path,
+) -> None:
+    avui = date.today()
+    registre = [
+        {"id": 1, "title": "Pràctica 1", "subject": "RS", "status": "pendent"},
+        {
+            "id": 2,
+            "title": "Pràctica 2",
+            "subject": "RS",
+            "status": "pendent",
+            "due": (avui - timedelta(days=1)).isoformat(),
+        },
+        {
+            "id": 3,
+            "title": "Pràctica 3",
+            "subject": "RS",
+            "status": "pendent",
+            "due": (avui + timedelta(days=1)).isoformat(),
+        },
+    ]
+    escriure_tasques(projecte_temporal, registre)
+
+    resultat = executar(projecte_temporal, "list", "--subject", "SO")
+
+    assert resultat.stdout.strip() == "No hi ha cap tasca d'aquesta assignatura"
+    assert tasques_desades(projecte_temporal) == registre
