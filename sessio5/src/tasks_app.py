@@ -177,6 +177,34 @@ def etiqueta_temporal(tasca: Task, avui: date) -> str | None:
     return None
 
 
+def resum_tasques(ruta: Path | None = None, avui: date | None = None) -> list[str]:
+    tasques = carregar_tasques(ruta)
+    data_actual = avui if avui is not None else date.today()
+    total = len(tasques)
+    completades = 0
+    pendents = 0
+    urgents = 0
+    caducades = 0
+    for tasca in tasques:
+        if tasca.estat == "completada":
+            completades += 1
+            continue
+        etiqueta = etiqueta_temporal(tasca, data_actual)
+        if etiqueta == "[CADUCADA]":
+            caducades += 1
+        elif etiqueta == "[URGENT]":
+            urgents += 1
+        else:
+            pendents += 1
+    return [
+        f"Nombre total de tasques: {total}",
+        f"Nombre total de tasques pendents: {pendents}",
+        f"Nombre total de tasques completades: {completades}",
+        f"Nombre total de tasques urgents: {urgents}",
+        f"Nombre total de tasques caducades: {caducades}",
+    ]
+
+
 def llistar_tasques(ruta: Path | None = None, avui: date | None = None) -> list[str]:
     tasques = carregar_tasques(ruta)
     if not tasques:
@@ -227,7 +255,12 @@ def construir_parser() -> argparse.ArgumentParser:
     )
     editar.add_argument("--status", default=None, help="Estat nou de la tasca")
 
-    comandes.add_parser("list", help="Mostra totes les tasques")
+    llistar = comandes.add_parser("list", help="Mostra totes les tasques")
+    llistar.add_argument(
+        "--short",
+        action="store_true",
+        help="Mostra un resum de les tasques",
+    )
 
     completar = comandes.add_parser("complete", help="Marca una tasca com a completada")
     completar.add_argument("--id", required=True, type=int, help="ID de la tasca")
@@ -266,7 +299,8 @@ def main(argv: list[str] | None = None) -> int:
         elif args.comanda == "delete":
             print(eliminar_tasca(args.id))
         else:
-            for linia in llistar_tasques():
+            linies = resum_tasques() if args.short else llistar_tasques()
+            for linia in linies:
                 print(linia)
     except ValueError as error:
         print(f"Error: {error}", file=sys.stderr)
