@@ -1,1 +1,79 @@
-[]
+[
+  {
+    "id": 1,
+    "title": "Pràctica 1",
+    "subject": "RS",
+    "status": "completada",
+    "due": "2026-11-01"
+  },
+  {
+    "id": 2,
+    "title": "projecte",
+    "subject": "SO",
+    "status": "pendent",
+    "due": "2026-11-01"
+  },
+  {
+    "id": 3,
+    "title": "Informe BD",
+    "subject": "BD",
+    "status": "pendent",
+    "due": "2026-11-20"
+  },
+  {
+    "id": 4,
+    "title": "Entrega SO",
+    "subject": "SO",
+    "status": "completada",
+    "due": "2026-12-02"
+  },
+  {
+    "id": 5,
+    "title": "Pràctica 2",
+    "subject": "RS",
+    "status": "pendent",
+    "due": "2026-12-15"
+  },
+  {
+    "id": 6,
+    "title": "Lectura article",
+    "subject": "BD",
+    "status": "completada",
+    "due": "2026-12-20"
+  },
+  {
+    "id": 7,
+    "title": "Examen parcial",
+    "subject": "SO",
+    "status": "pendent",
+    "due": "2026-11-20"
+  },
+  {
+    "id": 8,
+    "title": "Projecte final",
+    "subject": "SO",
+    "status": "pendent",
+    "due": "2027-01-15"
+  },
+  {
+    "id": 9,
+    "title": "Entrega Pràctica 3",
+    "subject": "RS",
+    "status": "pendent",
+    "due": "2026-11-30"
+  },
+  {
+    "id": 10,
+    "title": "Qüestionari BD",
+    "subject": "BD",
+    "status": "pendent",
+    "due": "2026-12-05"
+  },
+  {
+    "id": 11,
+    "title": "Lab SO",
+    "subject": "SO",
+    "status": "pendent",
+    "due": "2026-12-04"
+  }
+]
